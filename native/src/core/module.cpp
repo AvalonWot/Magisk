@@ -64,6 +64,11 @@ bool dir_node::prepare() {
         bool cannot_mnt;
         if (struct stat st{}; lstat(it->second->node_path().data(), &st) != 0) {
             cannot_mnt = true;
+        } else if (isa<removed_node>(it->second)) {
+            cannot_mnt = true;
+        } else if (isa<place_node>(it->second)) {
+            it->second->set_exist(true);
+            cannot_mnt = true;
         } else {
             it->second->set_exist(true);
             cannot_mnt = it->second->is_lnk() || S_ISLNK(st.st_mode);
@@ -216,15 +221,25 @@ static void inject_magisk_bins(root_node *system) {
         bin = new inter_node("bin");
         system->insert(bin);
     }
+    for (int i = 0; applet_names[i]; ++i)
+        bin->insert(new removed_node(applet_names[i]));
+    bin->insert(new removed_node("supolicy"));
 
     // Insert binaries
     bin->insert(new magisk_node("magisk"));
     bin->insert(new magisk_node("magiskpolicy"));
 
-    // Also delete all applets to make sure no modules can override it
+    bin->insert(new place_node("appwidget", 0755));
+    bin->insert(new place_node("bu", 0755));
+
+    auto xbin = system->get_child<inter_node>("xbin");
+    if (!xbin) {
+        xbin = new inter_node("xbin");
+        system->insert(xbin);
+    }
     for (int i = 0; applet_names[i]; ++i)
-        delete bin->extract(applet_names[i]);
-    delete bin->extract("supolicy");
+        xbin->insert(new removed_node(applet_names[i]));
+    xbin->insert(new removed_node("supolicy"));
 }
 
 vector<module_info> *module_list;

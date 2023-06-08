@@ -117,7 +117,7 @@ void enable_selinux() {
 #if MAGISK_DEBUG
     if (access(SELINUX_MNT, F_OK) != 0)
         return;
-    se_state = true;
+    se_state = false;
 #endif
     setcon = __setcon;
     getfilecon = __getfilecon;

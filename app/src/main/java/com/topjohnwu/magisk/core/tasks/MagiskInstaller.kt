@@ -418,7 +418,7 @@ abstract class MagiskInstallImpl protected constructor(
     private fun String.fsh() = ShellUtils.fastCmd(shell, this)
     private fun Array<String>.fsh() = ShellUtils.fastCmd(shell, *this)
 
-    protected fun patchFile(file: Uri) = extractFiles() && handleFile(file)
+    protected fun patchFile(file: Uri) = extractFiles()
 
     protected fun direct() = findImage() && extractFiles() && patchBoot() && flashBoot()
 

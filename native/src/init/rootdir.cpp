@@ -174,7 +174,8 @@ static void extract_files(bool sbin) {
         auto magisk = mmap_data(m32);
         unlink(m32);
         int fd = xopen("magisk32", O_WRONLY | O_CREAT, 0755);
-        unxz(fd, magisk.buf, magisk.sz);
+        if (!unxz(fd, magisk.buf, magisk.sz))
+            LOGE("decompress %s fail", m32);
         close(fd);
         patch_socket_name("magisk32");
     }
@@ -182,7 +183,8 @@ static void extract_files(bool sbin) {
         auto magisk = mmap_data(m64);
         unlink(m64);
         int fd = xopen("magisk64", O_WRONLY | O_CREAT, 0755);
-        unxz(fd, magisk.buf, magisk.sz);
+        if (!unxz(fd, magisk.buf, magisk.sz))
+            LOGE("decompress %s fail", m64);
         close(fd);
         patch_socket_name("magisk64");
         xsymlink("./magisk64", "magisk");
@@ -193,7 +195,8 @@ static void extract_files(bool sbin) {
         auto stub = mmap_data(stub_xz);
         unlink(stub_xz);
         int fd = xopen("stub.apk", O_WRONLY | O_CREAT, 0);
-        unxz(fd, stub.buf, stub.sz);
+        if (!unxz(fd, stub.buf, stub.sz))
+            LOGE("decompress %s fail", stub_xz);
         close(fd);
     }
 }

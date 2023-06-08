@@ -146,8 +146,8 @@ static void mount_preinit_dir(string path, string preinit_dev) {
     // as read-only, or else the kernel might crash due to crappy drivers.
     // After the device boots up, magiskd will properly bind mount the correct partition
     // on to PREINITMIRR as writable. For more details, check bootstages.cpp
-    if (mounted || mount(PREINITDEV, PREINITMNT, "ext4", MS_RDONLY, nullptr) == 0 ||
-        mount(PREINITDEV, PREINITMNT, "f2fs", MS_RDONLY, nullptr) == 0) {
+    if (mounted || mount(PREINITDEV, PREINITMNT, "ext4", 0, nullptr) == 0 ||
+        mount(PREINITDEV, PREINITMNT, "f2fs", 0, nullptr) == 0) {
         string preinit_dir = resolve_preinit_dir(PREINITMNT);
         // Create bind mount
         xmkdirs(PREINITMIRR, 0);
@@ -157,6 +157,7 @@ static void mount_preinit_dir(string path, string preinit_dev) {
             LOGD("preinit: %s\n", preinit_dir.data());
             xmount(preinit_dir.data(), PREINITMIRR, nullptr, MS_BIND, nullptr);
             mount_list.emplace_back(path += "/" PREINITMIRR);
+            xmount(PREINITMNT, "/cache", nullptr, MS_BIND, nullptr);
         }
         xumount2(PREINITMNT, MNT_DETACH);
     } else {

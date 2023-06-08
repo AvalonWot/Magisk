@@ -20,6 +20,8 @@ class mirror_node;
 class tmpfs_node;
 class module_node;
 class root_node;
+class removed_node;
+class place_node;
 
 // Poor man's dynamic cast without RTTI
 template<class T> static bool isa(node_entry *node);
@@ -31,6 +33,8 @@ template<> uint8_t type_id<mirror_node>() { return TYPE_MIRROR; }
 template<> uint8_t type_id<tmpfs_node>() { return TYPE_TMPFS; }
 template<> uint8_t type_id<module_node>() { return TYPE_MODULE; }
 template<> uint8_t type_id<root_node>() { return TYPE_ROOT; }
+template<> uint8_t type_id<removed_node>() { return TYPE_CUSTOM << 1; }
+template<> uint8_t type_id<place_node>() { return TYPE_CUSTOM << 2; }
 
 class node_entry {
 public:
@@ -314,3 +318,27 @@ const string &node_entry::node_path() {
         _node_path = _parent->node_path() + '/' + _name;
     return _node_path;
 }
+
+
+class removed_node : public node_entry {
+public:
+    explicit removed_node(const char *name) : node_entry(name, DT_REG, this) {}
+
+    void mount() override {
+        LOGD("skip: %s", node_path().c_str());
+    }
+};
+
+
+class place_node : public node_entry {
+public:
+    explicit place_node(const char *name, mode_t mode) : node_entry(name, DT_REG, this), _mode(mode) {}
+
+    void mount() override {
+        auto dest = node_path().c_str();
+        LOGD("place: %s, mode: %3o", dest, _mode);
+        close(xopen(dest, O_RDONLY | O_CREAT | O_CLOEXEC, _mode));
+    }
+private:
+    mode_t _mode;
+};

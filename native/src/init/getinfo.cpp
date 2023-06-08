@@ -146,12 +146,19 @@ void setup_klog() {
     if (fd > STDERR_FILENO)
         close(fd);
 
-    if (access("/dev/kmsg", W_OK) == 0) {
-        fd = xopen("/dev/kmsg", O_WRONLY | O_CLOEXEC);
-    } else {
-        mknod("/kmsg", S_IFCHR | 0666, makedev(1, 11));
-        fd = xopen("/kmsg", O_WRONLY | O_CLOEXEC);
-        unlink("/kmsg");
+    // if (access("/dev/kmsg", W_OK) == 0) {
+    //     fd = xopen("/dev/kmsg", O_WRONLY | O_CLOEXEC);
+    // } else {
+    //     mknod("/kmsg", S_IFCHR | 0666, makedev(1, 11));
+    //     fd = xopen("/kmsg", O_WRONLY | O_CLOEXEC);
+    //     unlink("/kmsg");
+    // }
+    xmkdir("/loggggg", 0777);
+    xmount("magisk", "/loggggg", "tmpfs", 0, "mode=777");
+    fd = xopen("/loggggg/magisk.log", O_CREAT | O_WRONLY | O_CLOEXEC);
+    if (fd == -1) {
+        xmkdir("/loggggg/error", 0);
+        return;
     }
 
     kmsg = fdopen(fd, "w");
@@ -160,10 +167,10 @@ void setup_klog() {
     cpp_logger = klog_with_rs;
 
     // Disable kmsg rate limiting
-    if (FILE *rate = fopen("/proc/sys/kernel/printk_devkmsg", "w")) {
-        fprintf(rate, "on\n");
-        fclose(rate);
-    }
+    // if (FILE *rate = fopen("/proc/sys/kernel/printk_devkmsg", "w")) {
+    //     fprintf(rate, "on\n");
+    //     fclose(rate);
+    // }
 }
 
 void BootConfig::set(const kv_pairs &kv) {
