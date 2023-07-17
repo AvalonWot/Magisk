@@ -33,3 +33,6 @@ popd
 pushd ./ramdisk
 zcat < ../boot/ramdisk | cpio -imd
 popd
+# 建立ota
+[ -d ./ota ] || mkdir ./ota
+mount /dev/nbd1p1 ./ota
